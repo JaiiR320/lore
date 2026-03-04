@@ -6,23 +6,23 @@ Run commands with `bun packages/cli/index.ts <command>` from the repo root.
 
 ```
 lore init                     # Initialize .lore/ in current directory
-lore create <name>            # Create a new task
-lore list                     # List all tasks
-lore show <name>              # Show task details and memory
-lore memory <name> <content>  # Append memory to a task
-lore complete <name>          # Mark a task as completed
-lore delete <name>            # Delete a task and its memory
+lore create <name>            # Create a new tome
+lore list                     # List all tomes
+lore show <name>              # Show tome details
+lore memory <name> <content>  # Append an entry to a tome
+lore complete <name>          # Mark a tome as completed
+lore delete <name>            # Delete a tome
 ```
 
 ## Examples
 
 ```bash
-# List tasks
+# List tomes
 bun packages/cli/index.ts list
 
-# Show a task's memory
-bun packages/cli/index.ts show "my-task"
+# Show a tome
+bun packages/cli/index.ts show "my-tome"
 
-# Append memory
-bun packages/cli/index.ts memory "my-task" "Decided to use PostgreSQL for the database layer"
+# Append an entry
+bun packages/cli/index.ts memory "my-tome" "Decided to use PostgreSQL for the database layer"
 ```

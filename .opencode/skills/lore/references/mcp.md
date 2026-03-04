@@ -4,47 +4,47 @@ All tools require a `directory` argument — the project root directory.
 
 ## lore_list
 
-List all tasks. Optionally filter by status.
+List all tomes. Optionally filter by status.
 
 - `directory` (string, required): Project root directory
 - `status` (string, optional): `"active"` or `"completed"`
 
-Returns JSON array of tasks.
+Returns JSON array of tomes.
 
 ## lore_show
 
-Show a task's details and its memory.
+Show a tome's details and its contents.
 
 - `directory` (string, required): Project root directory
-- `name` (string, required): Task name
+- `name` (string, required): Tome name
 
-Returns task metadata and memory content.
+Returns tome metadata and entries.
 
 ## lore_create
 
-Create a new task.
+Create a new tome.
 
 - `directory` (string, required): Project root directory
-- `name` (string, required): Task name
+- `name` (string, required): Tome name
 
 ## lore_memory
 
-Append a memory entry to a task.
+Append an entry to a tome.
 
 - `directory` (string, required): Project root directory
-- `name` (string, required): Task name
-- `content` (string, required): Memory content to append
+- `name` (string, required): Tome name
+- `content` (string, required): Content to append
 
 ## lore_complete
 
-Mark a task as completed.
+Mark a tome as completed.
 
 - `directory` (string, required): Project root directory
-- `name` (string, required): Task name
+- `name` (string, required): Tome name
 
 ## lore_delete
 
-Delete a task and its memory.
+Delete a tome.
 
 - `directory` (string, required): Project root directory
-- `name` (string, required): Task name
+- `name` (string, required): Tome name
