@@ -3,7 +3,7 @@
   "mcp": {
     "lore": {
       "type": "local",
-      "command": ["bun", "run", "/home/jair/Dev/lore/packages/mcp/index.ts"],
+      "command": ["lore-mcp"],
       "enabled": true
     }
   }

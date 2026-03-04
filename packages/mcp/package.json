@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "bin": {
+    "lore-mcp": "./index.ts"
+  },
   "dependencies": {
     "@lore/core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.1",
