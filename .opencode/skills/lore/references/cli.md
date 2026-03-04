@@ -9,7 +9,7 @@ lore init                     # Initialize .lore/ in current directory
 lore create <name>            # Create a new tome
 lore list                     # List all tomes
 lore show <name>              # Show tome details
-lore memory <name> <content>  # Append an entry to a tome
+lore write <name> <content>   # Append an entry to a tome
 lore complete <name>          # Mark a tome as completed
 lore delete <name>            # Delete a tome
 ```
@@ -24,5 +24,5 @@ bun packages/cli/index.ts list
 bun packages/cli/index.ts show "my-tome"
 
 # Append an entry
-bun packages/cli/index.ts memory "my-tome" "Decided to use PostgreSQL for the database layer"
+bun packages/cli/index.ts write "my-tome" "Decided to use PostgreSQL for the database layer"
 ```

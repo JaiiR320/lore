@@ -24,7 +24,7 @@ Commands:
   create <name>            Create a new tome
   list                     List all tomes
   show <name>              Show tome details
-  memory <name> <content>  Append an entry to a tome
+  write <name> <content>   Append an entry to a tome
   complete <name>          Mark a tome as completed
   delete <name>            Delete a tome`);
 }
@@ -94,10 +94,10 @@ try {
       break;
     }
 
-    case "memory": {
+    case "write": {
       const name = args[1];
       const content = args.slice(2).join(" ");
-      if (!name || !content) throw new Error("Usage: lore memory <name> <content>");
+      if (!name || !content) throw new Error("Usage: lore write <name> <content>");
       const lorePath = findLorePath();
       const tome = await getTome(lorePath, name);
       await writeTome(lorePath, tome.id, content);

@@ -27,7 +27,7 @@ Create a new tome.
 - `directory` (string, required): Project root directory
 - `name` (string, required): Tome name
 
-## lore_memory
+## lore_write
 
 Append an entry to a tome.
 

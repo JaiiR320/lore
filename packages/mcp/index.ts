@@ -94,7 +94,7 @@ server.registerTool(
 );
 
 server.registerTool(
-  "memory",
+  "write",
   {
     description: "Append an entry to a tome.",
     inputSchema: {
