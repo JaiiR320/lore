@@ -21,7 +21,7 @@ export async function createTome(lorePath: string, name: string): Promise<Tome> 
   const now = new Date().toISOString();
   const tome: Tome = {
     id: crypto.randomUUID(),
-    name,
+    name: slug,
     status: "active",
     createdAt: now,
     updatedAt: now,
