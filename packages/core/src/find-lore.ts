@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 
-export function findLorePath(): string {
-  let dir = process.cwd();
+export function findLorePath(startDir?: string): string {
+  let dir = startDir ?? process.cwd();
 
   while (true) {
     const candidate = join(dir, ".lore");

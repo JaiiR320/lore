@@ -10,8 +10,8 @@ import {
   deleteTask,
   getMemory,
   appendMemory,
+  findLorePath,
 } from "@lore/core";
-import { findLorePath } from "./src/find-lore.ts";
 
 const args = Bun.argv.slice(2);
 const command = args[0];

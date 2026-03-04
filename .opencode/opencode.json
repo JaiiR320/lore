@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "lore": {
+      "type": "local",
+      "command": ["bun", "run", "/home/jair/Dev/lore/packages/mcp/index.ts"],
+      "enabled": true
+    }
+  }
+}
