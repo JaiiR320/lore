@@ -3,13 +3,13 @@
 import { existsSync, mkdirSync, readFileSync, appendFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  createTask,
-  getTask,
-  listTasks,
-  completeTask,
-  deleteTask,
-  getMemory,
-  appendMemory,
+  createTome,
+  getTome,
+  listTomes,
+  completeTome,
+  deleteTome,
+  readTome,
+  writeTome,
   findLorePath,
 } from "@lore/core";
 
@@ -21,21 +21,21 @@ function usage() {
 
 Commands:
   init                     Initialize .lore/ in current directory
-  create <name>            Create a new task
-  list                     List all tasks
-  show <name>              Show task details and memory
-  memory <name> <content>  Append memory to a task
-  complete <name>          Mark a task as completed
-  delete <name>            Delete a task and its memory`);
+  create <name>            Create a new tome
+  list                     List all tomes
+  show <name>              Show tome details
+  memory <name> <content>  Append an entry to a tome
+  complete <name>          Mark a tome as completed
+  delete <name>            Delete a tome`);
 }
 
 try {
   switch (command) {
     case "init": {
       const lorePath = join(process.cwd(), ".lore");
-      mkdirSync(join(lorePath, "memory"), { recursive: true });
-      if (!existsSync(join(lorePath, "tasks.json"))) {
-        await Bun.write(join(lorePath, "tasks.json"), "[]");
+      mkdirSync(join(lorePath, "tomes"), { recursive: true });
+      if (!existsSync(join(lorePath, "tomes.json"))) {
+        await Bun.write(join(lorePath, "tomes.json"), "[]");
       }
 
       // Add .lore to .gitignore if not already there
@@ -57,19 +57,19 @@ try {
       const name = args.slice(1).join(" ");
       if (!name) throw new Error("Usage: lore create <name>");
       const lorePath = findLorePath();
-      const task = await createTask(lorePath, name);
-      console.log(`Created task: ${task.name} (${task.id})`);
+      const tome = await createTome(lorePath, name);
+      console.log(`Created tome: ${tome.name} (${tome.id})`);
       break;
     }
 
     case "list": {
       const lorePath = findLorePath();
-      const tasks = await listTasks(lorePath);
-      if (tasks.length === 0) {
-        console.log("No tasks");
+      const tomes = await listTomes(lorePath);
+      if (tomes.length === 0) {
+        console.log("No tomes");
         break;
       }
-      for (const t of tasks) {
+      for (const t of tomes) {
         console.log(`[${t.status}] ${t.name} (${t.id})`);
       }
       break;
@@ -79,17 +79,17 @@ try {
       const name = args.slice(1).join(" ");
       if (!name) throw new Error("Usage: lore show <name>");
       const lorePath = findLorePath();
-      const task = await getTask(lorePath, name);
-      console.log(`Name:    ${task.name}`);
-      console.log(`ID:      ${task.id}`);
-      console.log(`Status:  ${task.status}`);
-      console.log(`Created: ${task.createdAt}`);
-      console.log(`Updated: ${task.updatedAt}`);
-      const memory = await getMemory(lorePath, task.id);
-      if (memory) {
-        console.log(`\n--- Memory ---\n\n${memory}`);
+      const tome = await getTome(lorePath, name);
+      console.log(`Name:    ${tome.name}`);
+      console.log(`ID:      ${tome.id}`);
+      console.log(`Status:  ${tome.status}`);
+      console.log(`Created: ${tome.createdAt}`);
+      console.log(`Updated: ${tome.updatedAt}`);
+      const entries = await readTome(lorePath, tome.id);
+      if (entries) {
+        console.log(`\n--- Entries ---\n\n${entries}`);
       } else {
-        console.log("\nNo memory yet.");
+        console.log("\nNo entries yet.");
       }
       break;
     }
@@ -99,9 +99,9 @@ try {
       const content = args.slice(2).join(" ");
       if (!name || !content) throw new Error("Usage: lore memory <name> <content>");
       const lorePath = findLorePath();
-      const task = await getTask(lorePath, name);
-      await appendMemory(lorePath, task.id, content);
-      console.log(`Memory appended to: ${task.name}`);
+      const tome = await getTome(lorePath, name);
+      await writeTome(lorePath, tome.id, content);
+      console.log(`Entry appended to: ${tome.name}`);
       break;
     }
 
@@ -109,9 +109,9 @@ try {
       const name = args.slice(1).join(" ");
       if (!name) throw new Error("Usage: lore complete <name>");
       const lorePath = findLorePath();
-      const task = await getTask(lorePath, name);
-      await completeTask(lorePath, task.id);
-      console.log(`Completed: ${task.name}`);
+      const tome = await getTome(lorePath, name);
+      await completeTome(lorePath, tome.id);
+      console.log(`Completed: ${tome.name}`);
       break;
     }
 
@@ -119,9 +119,9 @@ try {
       const name = args.slice(1).join(" ");
       if (!name) throw new Error("Usage: lore delete <name>");
       const lorePath = findLorePath();
-      const task = await getTask(lorePath, name);
-      await deleteTask(lorePath, task.id);
-      console.log(`Deleted: ${task.name}`);
+      const tome = await getTome(lorePath, name);
+      await deleteTome(lorePath, tome.id);
+      console.log(`Deleted: ${tome.name}`);
       break;
     }
 
