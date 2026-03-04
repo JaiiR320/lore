@@ -1,4 +1,4 @@
-export { getTask, createTask, listTasks, completeTask, deleteTask } from "./src/tasks.ts";
-export { getMemory, appendMemory } from "./src/memory.ts";
+export { getTome, createTome, listTomes, completeTome, deleteTome } from "./src/tomes.ts";
+export { readTome, writeTome } from "./src/tome.ts";
 export { findLorePath } from "./src/find-lore.ts";
-export type { Task } from "./src/types.ts";
+export type { Tome } from "./src/types.ts";
