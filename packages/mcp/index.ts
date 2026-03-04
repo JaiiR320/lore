@@ -21,15 +21,17 @@ const server = new McpServer({
 
 // --- Tools ---
 
-server.tool(
+server.registerTool(
   "lore_list",
-  "List all tasks. Optionally filter by status.",
   {
-    directory: z.string().describe("Project root directory"),
-    status: z
-      .enum(["active", "completed"])
-      .optional()
-      .describe("Filter by task status"),
+    description: "List all tasks. Optionally filter by status.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      status: z
+        .enum(["active", "completed"])
+        .optional()
+        .describe("Filter by task status"),
+    },
   },
   async ({ directory, status }) => {
     const lorePath = findLorePath(directory);
@@ -43,12 +45,14 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "lore_show",
-  "Show a task's details and its memory.",
   {
-    directory: z.string().describe("Project root directory"),
-    name: z.string().describe("Task name"),
+    description: "Show a task's details and its memory.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      name: z.string().describe("Task name"),
+    },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
@@ -69,12 +73,14 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "lore_create",
-  "Create a new task.",
   {
-    directory: z.string().describe("Project root directory"),
-    name: z.string().describe("Task name"),
+    description: "Create a new task.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      name: z.string().describe("Task name"),
+    },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
@@ -87,13 +93,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "lore_memory",
-  "Append a memory entry to a task.",
   {
-    directory: z.string().describe("Project root directory"),
-    name: z.string().describe("Task name"),
-    content: z.string().describe("Memory content to append"),
+    description: "Append a memory entry to a task.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      name: z.string().describe("Task name"),
+      content: z.string().describe("Memory content to append"),
+    },
   },
   async ({ directory, name, content }) => {
     const lorePath = findLorePath(directory);
@@ -105,12 +113,14 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "lore_complete",
-  "Mark a task as completed.",
   {
-    directory: z.string().describe("Project root directory"),
-    name: z.string().describe("Task name"),
+    description: "Mark a task as completed.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      name: z.string().describe("Task name"),
+    },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
@@ -122,12 +132,14 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "lore_delete",
-  "Delete a task and its memory.",
   {
-    directory: z.string().describe("Project root directory"),
-    name: z.string().describe("Task name"),
+    description: "Delete a task and its memory.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+      name: z.string().describe("Task name"),
+    },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
