@@ -1,0 +1,12 @@
+{
+  "name": "lore",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@lore/core": "workspace:*",
+    "@types/bun": "latest"
+  }
+}
