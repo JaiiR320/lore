@@ -9,7 +9,6 @@
     "link": "bun link --cwd packages/cli && bun link --cwd packages/mcp"
   },
   "devDependencies": {
-    "@lore/core": "workspace:*",
     "@types/bun": "latest"
   }
 }
