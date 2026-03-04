@@ -5,13 +5,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import {
   findLorePath,
-  listTasks,
-  getTask,
-  createTask,
-  getMemory,
-  appendMemory,
-  completeTask,
-  deleteTask,
+  listTomes,
+  getTome,
+  createTome,
+  readTome,
+  writeTome,
+  completeTome,
+  deleteTome,
 } from "@lore/core";
 
 const server = new McpServer({
@@ -22,51 +22,51 @@ const server = new McpServer({
 // --- Tools ---
 
 server.registerTool(
-  "lore_list",
+  "list",
   {
-    description: "List all tasks. Optionally filter by status.",
+    description: "List all tomes. Optionally filter by status.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
       status: z
         .enum(["active", "completed"])
         .optional()
-        .describe("Filter by task status"),
+        .describe("Filter by tome status"),
     },
   },
   async ({ directory, status }) => {
     const lorePath = findLorePath(directory);
-    let tasks = await listTasks(lorePath);
+    let tomes = await listTomes(lorePath);
     if (status) {
-      tasks = tasks.filter((t) => t.status === status);
+      tomes = tomes.filter((t) => t.status === status);
     }
     return {
-      content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(tomes, null, 2) }],
     };
   },
 );
 
 server.registerTool(
-  "lore_show",
+  "show",
   {
-    description: "Show a task's details and its memory.",
+    description: "Show a tome's details and its contents.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      name: z.string().describe("Task name"),
+      name: z.string().describe("Tome name"),
     },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const task = await getTask(lorePath, name);
-    const memory = await getMemory(lorePath, task.id);
+    const tome = await getTome(lorePath, name);
+    const entries = await readTome(lorePath, tome.id);
 
     const output = [
-      `Name:    ${task.name}`,
-      `ID:      ${task.id}`,
-      `Status:  ${task.status}`,
-      `Created: ${task.createdAt}`,
-      `Updated: ${task.updatedAt}`,
+      `Name:    ${tome.name}`,
+      `ID:      ${tome.id}`,
+      `Status:  ${tome.status}`,
+      `Created: ${tome.createdAt}`,
+      `Updated: ${tome.updatedAt}`,
       "",
-      memory ? `--- Memory ---\n\n${memory}` : "No memory yet.",
+      entries ? `--- Entries ---\n\n${entries}` : "No entries yet.",
     ].join("\n");
 
     return { content: [{ type: "text", text: output }] };
@@ -74,79 +74,79 @@ server.registerTool(
 );
 
 server.registerTool(
-  "lore_create",
+  "create",
   {
-    description: "Create a new task.",
+    description: "Create a new tome.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      name: z.string().describe("Task name"),
+      name: z.string().describe("Tome name"),
     },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const task = await createTask(lorePath, name);
+    const tome = await createTome(lorePath, name);
     return {
       content: [
-        { type: "text", text: `Created task: ${task.name} (${task.id})` },
+        { type: "text", text: `Created tome: ${tome.name} (${tome.id})` },
       ],
     };
   },
 );
 
 server.registerTool(
-  "lore_memory",
+  "memory",
   {
-    description: "Append a memory entry to a task.",
+    description: "Append an entry to a tome.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      name: z.string().describe("Task name"),
-      content: z.string().describe("Memory content to append"),
+      name: z.string().describe("Tome name"),
+      content: z.string().describe("Content to append"),
     },
   },
   async ({ directory, name, content }) => {
     const lorePath = findLorePath(directory);
-    const task = await getTask(lorePath, name);
-    await appendMemory(lorePath, task.id, content);
+    const tome = await getTome(lorePath, name);
+    await writeTome(lorePath, tome.id, content);
     return {
-      content: [{ type: "text", text: `Memory appended to: ${task.name}` }],
+      content: [{ type: "text", text: `Entry appended to: ${tome.name}` }],
     };
   },
 );
 
 server.registerTool(
-  "lore_complete",
+  "complete",
   {
-    description: "Mark a task as completed.",
+    description: "Mark a tome as completed.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      name: z.string().describe("Task name"),
+      name: z.string().describe("Tome name"),
     },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const task = await getTask(lorePath, name);
-    await completeTask(lorePath, task.id);
+    const tome = await getTome(lorePath, name);
+    await completeTome(lorePath, tome.id);
     return {
-      content: [{ type: "text", text: `Completed: ${task.name}` }],
+      content: [{ type: "text", text: `Completed: ${tome.name}` }],
     };
   },
 );
 
 server.registerTool(
-  "lore_delete",
+  "delete",
   {
-    description: "Delete a task and its memory.",
+    description: "Delete a tome.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      name: z.string().describe("Task name"),
+      name: z.string().describe("Tome name"),
     },
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const task = await getTask(lorePath, name);
-    await deleteTask(lorePath, task.id);
+    const tome = await getTome(lorePath, name);
+    await deleteTome(lorePath, tome.id);
     return {
-      content: [{ type: "text", text: `Deleted: ${task.name}` }],
+      content: [{ type: "text", text: `Deleted: ${tome.name}` }],
     };
   },
 );
