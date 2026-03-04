@@ -1,4 +1,4 @@
-export type Task = {
+export type Tome = {
   id: string;
   name: string;
   status: "active" | "completed";
