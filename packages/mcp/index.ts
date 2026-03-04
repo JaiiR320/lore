@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import {
   findLorePath,
+  initLore,
   listTomes,
   getTome,
   createTome,
@@ -20,6 +21,22 @@ const server = new McpServer({
 });
 
 // --- Tools ---
+
+server.registerTool(
+  "init",
+  {
+    description: "Initialize .lore/ in a project directory. Adds .lore to .gitignore.",
+    inputSchema: {
+      directory: z.string().describe("Project root directory"),
+    },
+  },
+  async ({ directory }) => {
+    await initLore(directory);
+    return {
+      content: [{ type: "text", text: `Initialized .lore/ in ${directory}` }],
+    };
+  },
+);
 
 server.registerTool(
   "list",

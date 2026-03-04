@@ -2,6 +2,12 @@
 
 All tools require a `directory` argument — the project root directory.
 
+## lore_init
+
+Initialize .lore/ in a project directory. Adds .lore to .gitignore.
+
+- `directory` (string, required): Project root directory
+
 ## lore_list
 
 List all tomes. Optionally filter by status.
