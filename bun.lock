@@ -11,6 +11,12 @@
     },
     "packages/cli": {
       "name": "@lore/cli",
+      "bin": {
+        "lore": "./index.ts",
+      },
+      "dependencies": {
+        "@lore/core": "workspace:*",
+      },
       "devDependencies": {
         "@types/bun": "latest",
       },

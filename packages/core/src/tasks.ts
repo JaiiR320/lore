@@ -37,6 +37,20 @@ export async function createTask(lorePath: string, name: string): Promise<Task> 
   return task;
 }
 
+export async function listTasks(lorePath: string): Promise<Task[]> {
+  return readTasks(lorePath);
+}
+
+export async function completeTask(lorePath: string, taskId: string): Promise<void> {
+  const tasks = await readTasks(lorePath);
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) throw new Error(`Task with id "${taskId}" not found`);
+
+  task.status = "completed";
+  task.updatedAt = new Date().toISOString();
+  await writeTasks(lorePath, tasks);
+}
+
 export async function deleteTask(lorePath: string, taskId: string): Promise<void> {
   const tasks = await readTasks(lorePath);
   const index = tasks.findIndex((t) => t.id === taskId);

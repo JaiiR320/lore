@@ -1,14 +1,10 @@
-import { appendMemory, createTask } from "@lore/core";
+import { appendMemory, createTask, getMemory, getTask } from "@lore/core";
 
 const lorePath = ".lore";
 
-// const task = await createTask(lorePath, "Create CLI");
-// console.log("Created:", task);
+const task = await getTask(lorePath, "Create CLI");
+console.log("Created:", task);
 
-const resp = await appendMemory(
-  lorePath,
-  "0de0cd65-f01d-4973-a317-50d24a73443b",
-  "Load the skill-creator skill",
-);
+const memory = await getMemory(lorePath, task.id);
 
-console.log(resp);
+console.log(memory);
