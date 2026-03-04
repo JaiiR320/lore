@@ -1,10 +1,10 @@
-import { appendMemory, createTask, getMemory, getTask } from "@lore/core";
+import { writeTome, createTome, readTome, getTome } from "@lore/core";
 
 const lorePath = ".lore";
 
-const task = await getTask(lorePath, "Create CLI");
-console.log("Created:", task);
+const tome = await getTome(lorePath, "Create CLI");
+console.log("Created:", tome);
 
-const memory = await getMemory(lorePath, task.id);
+const entries = await readTome(lorePath, tome.id);
 
-console.log(memory);
+console.log(entries);
