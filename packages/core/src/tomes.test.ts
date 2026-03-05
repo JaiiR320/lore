@@ -105,12 +105,12 @@ describe("tome lifecycle", () => {
 
     test("throws on duplicate tome name", async () => {
       await createTome(lorePath, "auth");
-      expect(createTome(lorePath, "auth")).rejects.toThrow("already exists");
+      await expect(createTome(lorePath, "auth")).rejects.toThrow("already exists");
     });
 
     test("throws on empty tome name", async () => {
-      expect(createTome(lorePath, "")).rejects.toThrow("cannot be empty");
-      expect(createTome(lorePath, "   ")).rejects.toThrow("cannot be empty");
+      await expect(createTome(lorePath, "")).rejects.toThrow("cannot be empty");
+      await expect(createTome(lorePath, "   ")).rejects.toThrow("cannot be empty");
     });
   });
 
@@ -126,7 +126,7 @@ describe("tome lifecycle", () => {
     });
 
     test("throws when tome does not exist", async () => {
-      expect(getTome(lorePath, "nonexistent")).rejects.toThrow("not found");
+      await expect(getTome(lorePath, "nonexistent")).rejects.toThrow("not found");
     });
   });
 
@@ -166,11 +166,11 @@ describe("tome lifecycle", () => {
       await createTome(lorePath, "auth");
       await deleteTome(lorePath, "auth");
       
-      expect(listTomes(lorePath)).resolves.toEqual([]);
+      await expect(listTomes(lorePath)).resolves.toEqual([]);
     });
 
     test("throws when tome does not exist", async () => {
-      expect(deleteTome(lorePath, "nonexistent")).rejects.toThrow("not found");
+      await expect(deleteTome(lorePath, "nonexistent")).rejects.toThrow("not found");
     });
   });
 });

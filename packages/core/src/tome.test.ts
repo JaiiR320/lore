@@ -53,7 +53,7 @@ describe("entry operations", () => {
     });
 
     test("throws when tome does not exist", async () => {
-      expect(writeEntry(lorePath, "nonexistent", "content")).rejects.toThrow("not found");
+      await expect(writeEntry(lorePath, "nonexistent", "content")).rejects.toThrow("not found");
     });
   });
 
