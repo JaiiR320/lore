@@ -5,10 +5,6 @@ export async function initLore(directory: string): Promise<string> {
   const lorePath = join(directory, ".lore");
   mkdirSync(join(lorePath, "tomes"), { recursive: true });
 
-  if (!existsSync(join(lorePath, "tomes.json"))) {
-    await Bun.write(join(lorePath, "tomes.json"), "[]");
-  }
-
   // Add .lore to .gitignore if not already there
   const gitignorePath = join(directory, ".gitignore");
   if (existsSync(gitignorePath)) {

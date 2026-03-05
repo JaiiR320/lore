@@ -1,22 +1,22 @@
 import { join } from "node:path";
-import type { Tome } from "./types.ts";
+import type { TomeFile } from "./types.ts";
 
 export function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export async function readTomes(lorePath: string): Promise<Tome[]> {
-  const file = Bun.file(join(lorePath, "tomes.json"));
-  if (!(await file.exists())) return [];
+export function tomePath(lorePath: string, slug: string): string {
+  return join(lorePath, "tomes", `${slug}.json`);
+}
+
+export async function readTomeFile(lorePath: string, slug: string): Promise<TomeFile> {
+  const file = Bun.file(tomePath(lorePath, slug));
+  if (!(await file.exists())) {
+    throw new Error(`Tome "${slug}" not found`);
+  }
   return file.json();
 }
 
-export async function writeTomes(lorePath: string, tomes: Tome[]): Promise<void> {
-  await Bun.write(join(lorePath, "tomes.json"), JSON.stringify(tomes, null, 2));
-}
-
-export function findTome(tomes: Tome[], tomeId: string): Tome {
-  const tome = tomes.find((t) => t.id === tomeId);
-  if (!tome) throw new Error(`Tome with id "${tomeId}" not found`);
-  return tome;
+export async function writeTomeFile(lorePath: string, slug: string, data: TomeFile): Promise<void> {
+  await Bun.write(tomePath(lorePath, slug), JSON.stringify(data, null, 2));
 }

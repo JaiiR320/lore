@@ -1,73 +1,69 @@
 import { join } from "node:path";
-import type { Tome } from "./types.ts";
-import { slugify, readTomes, writeTomes } from "./store.ts";
-
-export async function getTome(lorePath: string, name: string): Promise<Tome> {
-  const tomes = await readTomes(lorePath);
-  const slug = slugify(name);
-  const tome = tomes.find((t) => slugify(t.name) === slug);
-  if (!tome) throw new Error(`Tome with name "${name}" not found`);
-  return tome;
-}
+import { readdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
+import type { Tome, TomeFile } from "./types.ts";
+import { slugify, tomePath, readTomeFile, writeTomeFile } from "./store.ts";
 
 export async function createTome(lorePath: string, name: string): Promise<Tome> {
-  const tomes = await readTomes(lorePath);
   const slug = slugify(name);
+  if (!slug) throw new Error("Tome name cannot be empty");
 
-  if (tomes.some((t) => slugify(t.name) === slug)) {
-    throw new Error(`Tome with name "${name}" already exists`);
-  }
-
-  const now = new Date().toISOString();
-  const tome: Tome = {
-    id: crypto.randomUUID(),
-    name: slug,
-    status: "active",
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  tomes.push(tome);
-  await writeTomes(lorePath, tomes);
-
-  // Create empty tome file
-  const tomesDir = join(lorePath, "tomes");
-  await Bun.write(join(tomesDir, `${slug}.md`), "");
-
-  return tome;
-}
-
-export async function listTomes(lorePath: string): Promise<Tome[]> {
-  return readTomes(lorePath);
-}
-
-export async function completeTome(lorePath: string, tomeId: string): Promise<void> {
-  const tomes = await readTomes(lorePath);
-  const tome = tomes.find((t) => t.id === tomeId);
-  if (!tome) throw new Error(`Tome with id "${tomeId}" not found`);
-
-  tome.status = "completed";
-  tome.updatedAt = new Date().toISOString();
-  await writeTomes(lorePath, tomes);
-}
-
-export async function deleteTome(lorePath: string, tomeId: string): Promise<void> {
-  const tomes = await readTomes(lorePath);
-  const index = tomes.findIndex((t) => t.id === tomeId);
-
-  if (index === -1) {
-    throw new Error(`Tome with id "${tomeId}" not found`);
-  }
-
-  const tome = tomes[index]!;
-  tomes.splice(index, 1);
-  await writeTomes(lorePath, tomes);
-
-  // Delete tome file if it exists
-  const tomeFile = join(lorePath, "tomes", `${slugify(tome.name)}.md`);
-  const file = Bun.file(tomeFile);
+  const file = Bun.file(tomePath(lorePath, slug));
   if (await file.exists()) {
-    const { unlink } = await import("node:fs/promises");
-    await unlink(tomeFile);
+    throw new Error(`Tome "${slug}" already exists`);
   }
+
+  const data: TomeFile = { entries: [] };
+  await writeTomeFile(lorePath, slug, data);
+
+  return { name: slug, entries: [] };
+}
+
+export async function getTome(lorePath: string, name: string): Promise<Tome> {
+  const slug = slugify(name);
+  const data = await readTomeFile(lorePath, slug);
+  return { name: slug, entries: data.entries };
+}
+
+export type TomeSummary = {
+  name: string;
+  entryCount: number;
+};
+
+export async function listTomes(lorePath: string): Promise<TomeSummary[]> {
+  const tomesDir = join(lorePath, "tomes");
+
+  let files: string[];
+  try {
+    files = readdirSync(tomesDir);
+  } catch {
+    return [];
+  }
+
+  const summaries: TomeSummary[] = [];
+
+  for (const file of files) {
+    if (!file.endsWith(".json")) continue;
+    const slug = file.replace(/\.json$/, "");
+    try {
+      const data = await readTomeFile(lorePath, slug);
+      summaries.push({ name: slug, entryCount: data.entries.length });
+    } catch {
+      // skip malformed files
+    }
+  }
+
+  return summaries;
+}
+
+export async function deleteTome(lorePath: string, name: string): Promise<void> {
+  const slug = slugify(name);
+  const path = tomePath(lorePath, slug);
+
+  const file = Bun.file(path);
+  if (!(await file.exists())) {
+    throw new Error(`Tome "${slug}" not found`);
+  }
+
+  await unlink(path);
 }

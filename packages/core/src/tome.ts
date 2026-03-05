@@ -1,29 +1,59 @@
-import { join } from "node:path";
-import { slugify, readTomes, writeTomes, findTome } from "./store.ts";
+import type { Entry, EntryType } from "./types.ts";
+import { slugify, readTomeFile, writeTomeFile } from "./store.ts";
 
-export async function readTome(lorePath: string, tomeId: string): Promise<string> {
-  const tomes = await readTomes(lorePath);
-  const tome = findTome(tomes, tomeId);
+export type EntryFilters = {
+  types?: EntryType[];
+  tags?: string[];
+  since?: string;
+  last?: number;
+};
 
-  const tomeFile = Bun.file(join(lorePath, "tomes", `${slugify(tome.name)}.md`));
-  if (!(await tomeFile.exists())) return "";
-  return tomeFile.text();
+export async function readEntries(lorePath: string, name: string, filters?: EntryFilters): Promise<Entry[]> {
+  const slug = slugify(name);
+  const data = await readTomeFile(lorePath, slug);
+
+  let entries = data.entries;
+
+  if (filters?.types?.length) {
+    entries = entries.filter((e) => filters.types!.includes(e.type));
+  }
+
+  if (filters?.tags?.length) {
+    entries = entries.filter((e) => e.tags.some((t) => filters.tags!.includes(t)));
+  }
+
+  if (filters?.since) {
+    const since = filters.since;
+    entries = entries.filter((e) => e.timestamp >= since);
+  }
+
+  if (filters?.last) {
+    entries = entries.slice(-filters.last);
+  }
+
+  return entries;
 }
 
-export async function writeTome(lorePath: string, tomeId: string, content: string): Promise<void> {
-  const tomes = await readTomes(lorePath);
-  const tome = findTome(tomes, tomeId);
+export async function writeEntry(
+  lorePath: string,
+  name: string,
+  content: string,
+  type: EntryType = "progress",
+  tags: string[] = [],
+): Promise<Entry> {
+  const slug = slugify(name);
+  const data = await readTomeFile(lorePath, slug);
 
-  const tomePath = join(lorePath, "tomes", `${slugify(tome.name)}.md`);
-  const tomeFile = Bun.file(tomePath);
+  const entry: Entry = {
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    type,
+    content,
+    tags,
+  };
 
-  const existing = (await tomeFile.exists()) ? await tomeFile.text() : "";
-  const timestamp = new Date().toISOString();
-  const entry = `${existing ? existing + "\n" : ""}## ${timestamp}\n\n${content}\n`;
+  data.entries.push(entry);
+  await writeTomeFile(lorePath, slug, data);
 
-  await Bun.write(tomePath, entry);
-
-  // Update tome's updatedAt
-  tome.updatedAt = new Date().toISOString();
-  await writeTomes(lorePath, tomes);
+  return entry;
 }
