@@ -5,25 +5,44 @@ description: Persistent context for agentic coding sessions, organized into tome
 
 # Lore
 
-Tomes are scoped units of context that persist across agent sessions. Each tome accumulates entries as work progresses — decisions made, progress notes, architectural context. Lore is the collection of all tomes.
+Tomes are scoped units of context that persist across agent sessions. Each tome is a named collection of typed, tagged entries — decisions, patterns, mistakes, progress notes, references, and open questions.
+
+## Entry Types
+
+Every entry has a type. Use the right one:
+
+- **decision** — a choice between alternatives, with reasoning ("chose JWT over sessions because...")
+- **progress** — work completed, status update ("login endpoint done, tests passing")
+- **pattern** — a convention, rule, or recurring approach ("all API routes follow /api/v1/{resource}")
+- **mistake** — something that failed or should be avoided ("don't use dayjs, we standardized on date-fns")
+- **reference** — where something lives, how to find it ("payments module is in src/billing/")
+- **question** — unresolved, needs human input ("should we split the monolith?")
 
 ## Loading a Tome
 
 1. List all tomes to find what's available
 2. Match the user's request to a tome by name. If ambiguous, show the user the available tomes and ask which one
-3. Load the matched tome's details and entries
-4. Use the loaded entries as context for the session — treat it as ground truth for the tome
-5. Do NOT output the tome contents. Just say "Lore loaded for [tome-name]." and wait for the user's next instruction
+3. Use the `tags` tool first to see what tags exist in the tome
+4. Load entries using filters appropriate to the task:
+   - For general context: filter by types `decision`, `pattern`, `mistake`
+   - For catching up on recent work: use `last: 5` or filter by type `progress`
+   - For a specific topic: filter by relevant `tags`
+   - For project navigation: filter by type `reference`
+   - For open items: filter by type `question`
+5. Do NOT dump all entries. Use filters to load only what's relevant.
+6. Say "Lore loaded for [tome-name]." and wait for the user's next instruction
 
 ## Writing to a Tome
 
-Append a timestamped entry to a tome.
-
-Write to a tome when:
+Append an entry to a tome when:
 - A meaningful chunk of work is completed
 - Important architectural or design decisions are made
+- A convention or pattern is established
+- Something doesn't work and should be avoided
 - The session is ending and there's context the next session should know
 - The user explicitly asks to save/update lore
+
+Always classify the entry with the correct type and add relevant tags. Tags are how future sessions find this entry — choose tags that someone searching for this knowledge would use.
 
 ## No Match Found
 

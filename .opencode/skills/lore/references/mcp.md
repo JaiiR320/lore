@@ -10,21 +10,22 @@ Initialize .lore/ in a project directory. Adds .lore to .gitignore.
 
 ## lore_list
 
-List all tomes. Optionally filter by status.
+List all tomes. Returns name and entry count for each.
 
 - `directory` (string, required): Project root directory
-- `status` (string, optional): `"active"` or `"completed"`
 
-Returns JSON array of tomes.
+Returns JSON array of `{ name, entryCount }`.
 
 ## lore_show
 
-Show a tome's details and its contents.
+Show a tome's entries with optional filtering.
 
 - `directory` (string, required): Project root directory
 - `name` (string, required): Tome name
-
-Returns tome metadata and entries.
+- `types` (string[], optional): Filter by entry types — `decision`, `progress`, `pattern`, `mistake`, `reference`, `question`
+- `tags` (string[], optional): Filter by tags — returns entries matching any of the given tags
+- `since` (string, optional): ISO timestamp — only entries after this time
+- `last` (number, optional): Return only the last N entries (applied after other filters)
 
 ## lore_create
 
@@ -35,18 +36,22 @@ Create a new tome.
 
 ## lore_write
 
-Append an entry to a tome.
+Append a typed, tagged entry to a tome.
 
 - `directory` (string, required): Project root directory
 - `name` (string, required): Tome name
-- `content` (string, required): Content to append
+- `content` (string, required): Entry content
+- `type` (string, optional): Entry type — `decision`, `progress`, `pattern`, `mistake`, `reference`, `question`. Defaults to `progress`.
+- `tags` (string[], optional): Tags for this entry
 
-## lore_complete
+## lore_tags
 
-Mark a tome as completed.
+List all tags used in a tome.
 
 - `directory` (string, required): Project root directory
 - `name` (string, required): Tome name
+
+Returns a comma-separated list of tags.
 
 ## lore_delete
 
