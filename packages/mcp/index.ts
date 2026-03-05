@@ -9,11 +9,13 @@ import {
   listTomes,
   getTome,
   createTome,
-  readTome,
-  writeTome,
-  completeTome,
+  readEntries,
+  writeEntry,
   deleteTome,
+  ENTRY_TYPES,
 } from "@lore/core";
+
+const entryTypeEnum = z.enum(ENTRY_TYPES);
 
 const server = new McpServer({
   name: "lore",
@@ -41,21 +43,14 @@ server.registerTool(
 server.registerTool(
   "list",
   {
-    description: "List all tomes. Optionally filter by status.",
+    description: "List all tomes. Returns name and entry count for each tome.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
-      status: z
-        .enum(["active", "completed"])
-        .optional()
-        .describe("Filter by tome status"),
     },
   },
-  async ({ directory, status }) => {
+  async ({ directory }) => {
     const lorePath = findLorePath(directory);
-    let tomes = await listTomes(lorePath);
-    if (status) {
-      tomes = tomes.filter((t) => t.status === status);
-    }
+    const tomes = await listTomes(lorePath);
     return {
       content: [{ type: "text", text: JSON.stringify(tomes, null, 2) }],
     };
@@ -65,28 +60,43 @@ server.registerTool(
 server.registerTool(
   "show",
   {
-    description: "Show a tome's details and its contents.",
+    description:
+      "Show a tome's entries. Supports filtering by entry types, tags, recency, or count.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
       name: z.string().describe("Tome name"),
+      types: z
+        .array(entryTypeEnum)
+        .optional()
+        .describe("Filter by entry types (decision, progress, pattern, mistake, reference, question)"),
+      tags: z
+        .array(z.string())
+        .optional()
+        .describe("Filter by tags — returns entries matching any of the given tags"),
+      since: z
+        .string()
+        .optional()
+        .describe("Filter entries after this ISO timestamp"),
+      last: z
+        .number()
+        .optional()
+        .describe("Return only the last N entries (applied after other filters)"),
     },
   },
-  async ({ directory, name }) => {
+  async ({ directory, name, types, tags, since, last }) => {
     const lorePath = findLorePath(directory);
-    const tome = await getTome(lorePath, name);
-    const entries = await readTome(lorePath, tome.id);
+    const entries = await readEntries(lorePath, name, { types, tags, since, last });
 
-    const output = [
-      `Name:    ${tome.name}`,
-      `ID:      ${tome.id}`,
-      `Status:  ${tome.status}`,
-      `Created: ${tome.createdAt}`,
-      `Updated: ${tome.updatedAt}`,
-      "",
-      entries ? `--- Entries ---\n\n${entries}` : "No entries yet.",
-    ].join("\n");
+    if (entries.length === 0) {
+      return { content: [{ type: "text", text: "No entries found." }] };
+    }
 
-    return { content: [{ type: "text", text: output }] };
+    const lines = entries.map((e) => {
+      const tagStr = e.tags.length ? ` ${e.tags.map((t) => `#${t}`).join(" ")}` : "";
+      return `[${e.type}] ${e.timestamp} — ${e.content}${tagStr}`;
+    });
+
+    return { content: [{ type: "text", text: lines.join("\n\n") }] };
   },
 );
 
@@ -103,9 +113,7 @@ server.registerTool(
     const lorePath = findLorePath(directory);
     const tome = await createTome(lorePath, name);
     return {
-      content: [
-        { type: "text", text: `Created tome: ${tome.name} (${tome.id})` },
-      ],
+      content: [{ type: "text", text: `Created tome: ${tome.name}` }],
     };
   },
 );
@@ -113,27 +121,35 @@ server.registerTool(
 server.registerTool(
   "write",
   {
-    description: "Append an entry to a tome.",
+    description: "Append a typed, tagged entry to a tome.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
       name: z.string().describe("Tome name"),
       content: z.string().describe("Content to append"),
+      type: entryTypeEnum
+        .optional()
+        .describe("Entry type: decision, progress, pattern, mistake, reference, question. Defaults to progress."),
+      tags: z
+        .array(z.string())
+        .optional()
+        .describe("Tags for this entry — used for filtered retrieval later"),
     },
   },
-  async ({ directory, name, content }) => {
+  async ({ directory, name, content, type, tags }) => {
     const lorePath = findLorePath(directory);
-    const tome = await getTome(lorePath, name);
-    await writeTome(lorePath, tome.id, content);
+    const entry = await writeEntry(lorePath, name, content, type, tags);
     return {
-      content: [{ type: "text", text: `Entry appended to: ${tome.name}` }],
+      content: [
+        { type: "text", text: `Entry appended to ${name} [${entry.type}]` },
+      ],
     };
   },
 );
 
 server.registerTool(
-  "complete",
+  "tags",
   {
-    description: "Mark a tome as completed.",
+    description: "List all tags used in a tome. Useful for discovering what tags are available before querying.",
     inputSchema: {
       directory: z.string().describe("Project root directory"),
       name: z.string().describe("Tome name"),
@@ -141,11 +157,14 @@ server.registerTool(
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const tome = await getTome(lorePath, name);
-    await completeTome(lorePath, tome.id);
-    return {
-      content: [{ type: "text", text: `Completed: ${tome.name}` }],
-    };
+    const entries = await readEntries(lorePath, name);
+    const tags = [...new Set(entries.flatMap((e) => e.tags))].sort();
+
+    if (tags.length === 0) {
+      return { content: [{ type: "text", text: "No tags in this tome." }] };
+    }
+
+    return { content: [{ type: "text", text: tags.join(", ") }] };
   },
 );
 
@@ -160,10 +179,9 @@ server.registerTool(
   },
   async ({ directory, name }) => {
     const lorePath = findLorePath(directory);
-    const tome = await getTome(lorePath, name);
-    await deleteTome(lorePath, tome.id);
+    await deleteTome(lorePath, name);
     return {
-      content: [{ type: "text", text: `Deleted: ${tome.name}` }],
+      content: [{ type: "text", text: `Deleted: ${name}` }],
     };
   },
 );
